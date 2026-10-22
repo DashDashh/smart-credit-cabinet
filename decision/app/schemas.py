@@ -89,7 +89,7 @@ class Factor(BaseModel):
     impact: float = Field(
         description="Вклад в скор: плюс — снижает риск, минус — повышает"
     )
-    value: float | str = Field(description="Значение признака")
+    value: float | int | str = Field(description="Значение признака")
 
 
 # ВЫХОД: УСЛОВИЯ (при approved_with_conditions)

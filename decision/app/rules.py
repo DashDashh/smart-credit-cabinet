@@ -1,4 +1,4 @@
-from schemas import (
+from .schemas import (
     CompanyType,
     Conditions,
     DecisionRequest,
@@ -191,7 +191,7 @@ def decide(req: DecisionRequest) -> DecisionResponse:
     3. score_to_decision — пороги.
     4. build_conditions — если approved_with_conditions.
     """
-    from scoring import predict
+    from .scoring import predict
 
     # 1. Жёсткие проверки
     policy = policy_checks(req)
@@ -227,7 +227,7 @@ def decide(req: DecisionRequest) -> DecisionResponse:
     if fallback_used:
         model_version = "fallback-v1"
     else:
-        from scoring import get_model_version
+        from .scoring import get_model_version
         model_version = get_model_version()
 
     return DecisionResponse(

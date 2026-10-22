@@ -6,11 +6,11 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from fallback import fallback_scorecard
-from schemas import DecisionRequest, Factor
+from .fallback import fallback_scorecard
+from .schemas import DecisionRequest, Factor
 
 
-ARTIFACTS_DIR = Path(__file__).resolve().parent / "ml" / "artifacts"
+ARTIFACTS_DIR = Path(__file__).resolve().parent.parent / "ml" / "artifacts"
 MODEL_PATH = ARTIFACTS_DIR / "model.pkl"
 FEATURES_PATH = ARTIFACTS_DIR / "features.pkl"
 METRICS_PATH = ARTIFACTS_DIR / "metrics.json"
@@ -176,12 +176,22 @@ def _clean_feature_name(raw: str) -> Optional[str]:
     if raw.startswith("num__"):
         return raw[5:]
     if raw.startswith("cat__"):
-        return raw[5:].replace("_", "=", 1)
+        rest = raw[5:]
+        for col in _features["cat"]:
+            if rest.startswith(col + "_"):
+                value = rest[len(col) + 1:]
+                return f"{col}={value}"
+        return rest
     return raw
 
 
-def _get_value(clean_name: str, row: dict) -> float | str:
+def _get_value(clean_name: str, row: dict) -> float | int | str:
     if "=" in clean_name:
-        base, cat = clean_name.split("=", 1)
+        base, _, cat = clean_name.partition("=")
         return row.get(base, cat)
-    return float(row.get(clean_name, 0.0))
+    val = row.get(clean_name, 0.0)
+    if isinstance(val, (int, float)):
+        if float(val).is_integer():
+            return int(val)
+        return round(float(val), 4)
+    return val
