@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: cabinet-postgres
+    environment:
+      POSTGRES_DB: cabinet
+      POSTGRES_USER: cabinet
+      POSTGRES_PASSWORD: cabinet
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./back/cabinet/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cabinet -d cabinet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./back/cabinet
+    container_name: cabinet-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cabinet
+      SPRING_DATASOURCE_USERNAME: cabinet
+      SPRING_DATASOURCE_PASSWORD: cabinet
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
