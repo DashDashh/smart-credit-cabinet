@@ -1,4 +1,4 @@
-package com.hac.cabinet.model;
+package com.hac.cabinet.model.account;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "account")
 public class Account implements UserDetails {

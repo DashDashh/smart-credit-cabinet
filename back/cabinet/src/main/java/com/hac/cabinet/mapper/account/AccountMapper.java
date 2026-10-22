@@ -2,7 +2,7 @@ package com.hac.cabinet.mapper.account;
 
 import com.hac.cabinet.dto.account.AccountResponse;
 import com.hac.cabinet.dto.account.RegisterRequest;
-import com.hac.cabinet.model.Account;
+import com.hac.cabinet.model.account.Account;
 import org.springframework.stereotype.Component;
 
 @Component

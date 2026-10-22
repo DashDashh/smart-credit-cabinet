@@ -4,7 +4,7 @@ import com.hac.cabinet.dto.account.AccountResponse;
 import com.hac.cabinet.dto.account.RegisterRequest;
 import com.hac.cabinet.dto.account.UpdateProfileRequest;
 import com.hac.cabinet.mapper.account.AccountMapper;
-import com.hac.cabinet.model.Account;
+import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

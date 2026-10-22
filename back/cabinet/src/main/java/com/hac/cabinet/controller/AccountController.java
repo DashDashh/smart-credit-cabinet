@@ -3,7 +3,7 @@ package com.hac.cabinet.controller;
 import com.hac.cabinet.dto.account.AccountResponse;
 import com.hac.cabinet.dto.account.UpdateProfileRequest;
 import com.hac.cabinet.mapper.account.AccountMapper;
-import com.hac.cabinet.model.Account;
+import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.service.AccountService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

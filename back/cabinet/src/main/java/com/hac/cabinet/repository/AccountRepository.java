@@ -1,6 +1,6 @@
 package com.hac.cabinet.repository;
 
-import com.hac.cabinet.model.Account;
+import com.hac.cabinet.model.account.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
