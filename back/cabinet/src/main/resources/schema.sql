@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS account (
     CONSTRAINT pk_account PRIMARY KEY (id),
     CONSTRAINT uq_account_login UNIQUE (login),
     CONSTRAINT uq_account_email UNIQUE (email),
-    CONSTRAINT chk_account_role CHECK (role IN ('ADMIN', 'BANK', 'ENTREPRENEUR'))
+    CONSTRAINT chk_account_role CHECK (role IN ('ADMIN', 'BANK_EMPLOYEE', 'ENTREPRENEUR'))
 );
