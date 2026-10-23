@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .schemas import (
     CompanyType,
     Conditions,
@@ -13,8 +15,7 @@ from .schemas import (
 # score: 100 — минимальный риск, 0 — максимальный.
 APPROVE_THRESHOLD = 65.0           # score >= 65 - approved
 CONDITIONS_THRESHOLD = 45.0        # 45 <= score < 65 - approved_with_conditions
-NEEDS_INFO_THRESHOLD = 30.0        # 30 <= score < 45 - needs_info
-# score < 30 - rejected
+# score < 45 - rejected
 
 
 # КОНСТАНТЫ: ПРОДУКТЫ
@@ -38,6 +39,7 @@ PRODUCT_LIMITS = {
         "base_rate": 22.0,
     },
 }
+
 
 
 # 1. ЖЁСТКИЕ ПРОВЕРКИ (policy_checks)
@@ -98,12 +100,8 @@ def policy_checks(req: DecisionRequest) -> list[Factor]:
             value=True,
         ))
 
-    # 6. Расхождение выручки с ФНС (если есть официальная)
-    # В MVP fns.official_revenue не передаётся, но если появится — проверим
-    # (оставлено как TODO: если добавите поле в schemas)
-
-    # 7. Отрицательная прибыль при большой нагрузке
-    if f.net_profit_monthly < 0 and req.credit_history.current_debt_payments > 0:
+    # 6. Отрицательная прибыль при наличии долга (мягкий штраф)
+    if f.net_profit_monthly < 0 and f.current_debt_payments > 0:
         factors.append(Factor(
             name="negative_profit_with_debt",
             impact=-20.0,
@@ -113,16 +111,121 @@ def policy_checks(req: DecisionRequest) -> list[Factor]:
     return factors
 
 
-# 2. ПОРОГИ (score_to_decision)
+# 2. ПРОВЕРКА ПОЛНОТЫ ДАННЫХ (до ML)
+
+def check_data_completeness(req: DecisionRequest) -> list[Factor]:
+    """
+    Проверяет полноту и корректность данных ДО скоринга.
+
+    Возвращает список факторов. Если хоть один имеет
+    impact <= -100 - needs_info (скоринг не запускается).
+    """
+    factors: list[Factor] = []
+    c = req.company
+    f = req.financials
+    h = req.credit_history
+    a = req.application
+
+    # --- 1. Обязательные финансовые поля ---
+    if f.revenue_monthly is None or f.revenue_monthly <= 0:
+        factors.append(Factor(
+            name="missing_revenue_monthly",
+            impact=-100.0,
+            value=0.0,
+            description="Укажите месячную выручку — без неё невозможна оценка долговой нагрузки",
+        ))
+    if f.revenue_annual is None or f.revenue_annual <= 0:
+        factors.append(Factor(
+            name="missing_revenue_annual",
+            impact=-100.0,
+            value=0.0,
+            description="Укажите годовую выручку — она нужна для расчёта долговой нагрузки и лимитов",
+        ))
+    if f.net_profit_monthly is None:
+        factors.append(Factor(
+            name="missing_net_profit",
+            impact=-100.0,
+            value=0.0,
+            description="Укажите месячную чистую прибыль — она влияет на оценку покрытия долга",
+        ))
+
+    # --- 2. Несогласованность выручки (месячная vs годовая) ---
+    if f.revenue_monthly and f.revenue_annual:
+        ratio = f.revenue_annual / (f.revenue_monthly * 12)
+        if ratio < 0.5 or ratio > 2.0:
+            factors.append(Factor(
+                name="revenue_mismatch",
+                impact=-100.0,
+                value=round(ratio, 2),
+                description=(
+                    f"Годовая выручка не согласуется с месячной "
+                    f"(отношение {ratio:.2f}, ожидается 0.5–2.0). "
+                    f"Проверьте данные или приложите подтверждающие документы"
+                ),
+            ))
+
+    # --- 3. Сумма заявки vs выручка (грубая проверка корректности) ---
+    if f.revenue_annual and a.amount > f.revenue_annual * 5:
+        factors.append(Factor(
+            name="amount_far_above_revenue",
+            impact=-100.0,
+            value=round(a.amount / f.revenue_annual, 2),
+            description=(
+                f"Запрошенная сумма превышает годовую выручку более чем в 5 раз. "
+                f"Уточните сумму или приложите обоснование (бизнес-план, контракты)"
+            ),
+        ))
+
+    # --- 4. Возраст компании ---
+    if c.age_months is None or c.age_months < 0:
+        factors.append(Factor(
+            name="missing_age",
+            impact=-100.0,
+            value=0,
+            description="Укажите, сколько месяцев существует бизнес — это влияет на оценку риска",
+        ))
+
+    # --- 5. Срок и сумма ---
+    if a.term_months is None or a.term_months <= 0:
+        factors.append(Factor(
+            name="invalid_term",
+            impact=-100.0,
+            value=a.term_months,
+            description="Укажите срок кредита в месяцах — он должен быть положительным",
+        ))
+    if a.amount is None or a.amount <= 0:
+        factors.append(Factor(
+            name="invalid_amount",
+            impact=-100.0,
+            value=a.amount,
+            description="Укажите сумму кредита — она должна быть положительной",
+        ))
+
+    # --- 6. Кредитная история: просрочки без долга ---
+    if h.delinquencies_12m > 0 and h.total_debt_amount == 0:
+        factors.append(Factor(
+            name="delinquencies_without_debt",
+            impact=-100.0,
+            value=h.delinquencies_12m,
+            description=(
+                f"У вас {h.delinquencies_12m} просрочек, но не указана сумма обязательств. "
+                f"Уточните сумму или приложите кредитную историю"
+            ),
+        ))
+
+    return factors
+
+
+# 3. ПОРОГИ (score_to_decision)
 
 def score_to_decision(score: float) -> DecisionType:
-    """Маппинг score - решение по порогам."""
+    """
+    Маппинг score - решение по порогам.
+    """
     if score >= APPROVE_THRESHOLD:
         return DecisionType.approved
     if score >= CONDITIONS_THRESHOLD:
         return DecisionType.approved_with_conditions
-    if score >= NEEDS_INFO_THRESHOLD:
-        return DecisionType.needs_info
     return DecisionType.rejected
 
 
@@ -134,7 +237,7 @@ def risk_level(score: float) -> RiskLevel:
     return RiskLevel.high
 
 
-# 3. УСЛОВИЯ (build_conditions)
+# 4. УСЛОВИЯ (build_conditions)
 
 def build_conditions(req: DecisionRequest, score: float) -> Conditions:
     """
@@ -168,7 +271,7 @@ def build_conditions(req: DecisionRequest, score: float) -> Conditions:
     )
 
 
-# 4. NEXT_STEP (маппинг на состояние заявки)
+# 5. NEXT_STEP (маппинг на состояние заявки)
 
 NEXT_STEP_MAP = {
     DecisionType.approved: "client_accept_terms",
@@ -179,24 +282,24 @@ NEXT_STEP_MAP = {
 }
 
 
-# 5. ГЛАВНАЯ ФУНКЦИЯ
+# 6. ГЛАВНАЯ ФУНКЦИЯ
 
 def decide(req: DecisionRequest) -> DecisionResponse:
     """
     Принимает решение по заявке.
 
     Порядок:
-    1. policy_checks — жёсткие стопы (без ML).
-    2. scoring.predict — ML с fallback.
-    3. score_to_decision — пороги.
-    4. build_conditions — если approved_with_conditions.
+    1. policy_checks           — жёсткие стопы (без ML).
+    2. check_data_completeness — полнота данных (без ML).
+    3. scoring.predict         — ML или fallback (только если данные полные).
+    4. score_to_decision       — пороги 65/45.
+    5. build_conditions        — если approved_with_conditions.
     """
-    from .scoring import predict
+    from .scoring import predict, get_model_version
 
-    # 1. Жёсткие проверки
+    # 1. ЖЁСТКИЕ ПРОВЕРКИ
     policy = policy_checks(req)
     hard_block = any(f.impact <= -100 for f in policy)
-
     if hard_block:
         return DecisionResponse(
             score=0.0,
@@ -209,32 +312,51 @@ def decide(req: DecisionRequest) -> DecisionResponse:
             fallback_used=False,
         )
 
-    # 2. Скоринг (ML или fallback)
+    # 2. ПРОВЕРКА ПОЛНОТЫ
+    completeness = check_data_completeness(req)
+    incomplete = any(f.impact <= -100 for f in completeness)
+    if incomplete:
+        return DecisionResponse(
+            score=0.0,                     # score не определён
+            risk_level=RiskLevel.medium,   # нейтрально
+            decision=DecisionType.needs_info,
+            conditions=None,
+            factors=completeness,
+            next_step=NEXT_STEP_MAP[DecisionType.needs_info],
+            model_version="data-check-v1",
+            fallback_used=False,
+        )
+
+    # 3. СКОРИНГ
     score, p_default, ml_factors, fallback_used = predict(req)
 
-    # 3. Объединяем факторы: policy + ML
+    # 4. ОБЪЕДИНЯЕМ ФАКТОРЫ
     factors = policy + ml_factors
 
-    # 4. Порог
+    # 5. ПОРОГ
     decision = score_to_decision(score)
 
-    # 5. Условия (если нужны)
+    # 6. УСЛОВИЯ
     conditions = None
     if decision == DecisionType.approved_with_conditions:
         conditions = build_conditions(req, score)
 
-    # 6. Модель-версия
-    if fallback_used:
-        model_version = "fallback-v1"
-    else:
-        from .scoring import get_model_version
-        model_version = get_model_version()
+    a = req.application
+    rate = None
+    if decision == DecisionType.approved:
+        rate = PRODUCT_LIMITS[a.product_id.value]["base_rate"]
+    elif decision == DecisionType.approved_with_conditions:
+        rate = conditions.rate
+
+    # 7. MODEL_VERSION
+    model_version = "fallback-v1" if fallback_used else get_model_version()
 
     return DecisionResponse(
         score=round(score, 1),
         risk_level=risk_level(score),
         decision=decision,
         conditions=conditions,
+        rate=rate,
         factors=factors,
         next_step=NEXT_STEP_MAP[decision],
         model_version=model_version,

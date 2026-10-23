@@ -90,6 +90,7 @@ class Factor(BaseModel):
         description="Вклад в скор: плюс — снижает риск, минус — повышает"
     )
     value: float | int | str = Field(description="Значение признака")
+    description: Optional[str] = None
 
 
 # ВЫХОД: УСЛОВИЯ (при approved_with_conditions)
@@ -106,6 +107,7 @@ class DecisionResponse(BaseModel):
     risk_level: RiskLevel
     decision: DecisionType
     conditions: Optional[Conditions] = None
+    rate: Optional[float] = Field(None, description="Ставка, если одобрено")
     factors: list[Factor]
     next_step: str = Field(
         description="client_accept_terms | client_accept_conditions | bank_request_info | notify_client_rejection | manual_review"
