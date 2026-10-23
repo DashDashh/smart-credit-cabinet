@@ -4,12 +4,15 @@ import com.hac.cabinet.dto.application.ApplicationResponse;
 import com.hac.cabinet.dto.application.ChangeApplicationStatusRequest;
 import com.hac.cabinet.dto.application.CreateApplicationRequest;
 import com.hac.cabinet.dto.application.UpdateApplicationRequest;
+import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.service.ApplicationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,44 +28,43 @@ public class ApplicationController {
 
   @PostMapping
   public ResponseEntity<ApplicationResponse> create(
-      @Valid @RequestBody CreateApplicationRequest request) {
+      @AuthenticationPrincipal Account account,
+      @Valid @RequestBody CreateApplicationRequest request
+  ) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(applicationService.create(request));
+        .body(applicationService.create(account.getId(), request));
   }
 
   @GetMapping("/{productId}/{clientId}")
   public ResponseEntity<ApplicationResponse> getById(
+      @AuthenticationPrincipal Account account,
       @PathVariable UUID productId,
-      @PathVariable UUID clientId) {
-    return ResponseEntity.ok(applicationService.getById(productId, clientId));
+      @PathVariable UUID clientId
+  ) {
+    return ResponseEntity.ok(applicationService.getById(account.getId(), productId, clientId));
   }
 
   @GetMapping
-  public ResponseEntity<List<ApplicationResponse>> getAll() {
-    return ResponseEntity.ok(applicationService.getAll());
+  public ResponseEntity<List<ApplicationResponse>> getAll(
+      @AuthenticationPrincipal Account account) {
+    return ResponseEntity.ok(applicationService.getAll(account.getId()));
   }
 
   @PutMapping("/{productId}/{clientId}")
   public ResponseEntity<ApplicationResponse> update(
+      @AuthenticationPrincipal Account account,
       @PathVariable UUID productId,
       @PathVariable UUID clientId,
       @Valid @RequestBody UpdateApplicationRequest request) {
-    return ResponseEntity.ok(applicationService.update(productId, clientId, request));
+    return ResponseEntity.ok(applicationService.update(account.getId(), productId, clientId, request));
   }
 
   @PatchMapping("/{productId}/{clientId}/status")
   public ResponseEntity<ApplicationResponse> changeStatus(
+      @AuthenticationPrincipal Account account,
       @PathVariable UUID productId,
       @PathVariable UUID clientId,
       @Valid @RequestBody ChangeApplicationStatusRequest request) {
-    return ResponseEntity.ok(applicationService.changeStatus(productId, clientId, request));
-  }
-
-  @DeleteMapping("/{productId}/{clientId}")
-  public ResponseEntity<Void> delete(
-      @PathVariable UUID productId,
-      @PathVariable UUID clientId) {
-    applicationService.delete(productId, clientId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(applicationService.changeStatus(account.getId(), productId, clientId, request));
   }
 }
