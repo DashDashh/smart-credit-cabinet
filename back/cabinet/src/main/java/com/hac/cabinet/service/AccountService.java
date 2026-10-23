@@ -94,6 +94,11 @@ public class AccountService implements UserDetailsService {
     accountRepository.deleteById(id);
   }
 
+  @Transactional(readOnly = true)
+  public boolean existsById(UUID id) {
+    return accountRepository.existsById(id);
+  }
+
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     return accountRepository.findByLogin(username)
