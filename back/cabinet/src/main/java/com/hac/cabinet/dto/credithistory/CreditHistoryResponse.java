@@ -9,6 +9,7 @@ public record CreditHistoryResponse(
     int activeLoansCount,
     BigDecimal totalDebtAmount,
     boolean taxArrears,
-    UUID companyId
+    UUID companyId,
+    boolean isApproved
 ) {
 }

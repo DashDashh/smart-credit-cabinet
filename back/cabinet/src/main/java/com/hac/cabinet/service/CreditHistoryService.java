@@ -25,6 +25,7 @@ public class CreditHistoryService {
   private final CompanyUtils companyUtils;
   private final CreditHistoryMapper creditHistoryMapper;
   private final AccountService accountService;
+  private final ExternalCreditHistoryServiceMock externalCreditHistoryServiceMock;
 
   @Transactional
   public CreditHistoryResponse create(UUID companyId, UpsertCreditHistoryRequest request, UUID accountId) {
@@ -38,7 +39,10 @@ public class CreditHistoryService {
     CreditHistory history = creditHistoryMapper.fromRequest(request);
     history.setCompany(company);
 
-    return creditHistoryMapper.toResponse(creditHistoryRepository.save(history));
+    return creditHistoryMapper.toResponse(
+        creditHistoryRepository.save(history),
+        externalCreditHistoryServiceMock.approveCompanyCreditHistory(companyId)
+    );
   }
 
   @Transactional(readOnly = true)
@@ -57,7 +61,10 @@ public class CreditHistoryService {
           HttpStatus.NOT_FOUND, "Credit history not found for company: " + companyId);
     }
 
-    return creditHistoryMapper.toResponse(history);
+    return creditHistoryMapper.toResponse(
+        history,
+        externalCreditHistoryServiceMock.approveCompanyCreditHistory(companyId)
+    );
   }
 
   @Transactional
@@ -75,6 +82,9 @@ public class CreditHistoryService {
     history.setTotalDebtAmount(request.totalDebtAmount());
     history.setTaxArrears(request.taxArrears());
 
-    return creditHistoryMapper.toResponse(creditHistoryRepository.save(history));
+    return creditHistoryMapper.toResponse(
+        creditHistoryRepository.save(history),
+        externalCreditHistoryServiceMock.approveCompanyCreditHistory(companyId)
+    );
   }
 }

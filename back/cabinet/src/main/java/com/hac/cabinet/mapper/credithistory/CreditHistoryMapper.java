@@ -18,14 +18,15 @@ public class CreditHistoryMapper {
     return history;
   }
 
-  public CreditHistoryResponse toResponse(CreditHistory history) {
+  public CreditHistoryResponse toResponse(CreditHistory history, boolean isApproved) {
     return new CreditHistoryResponse(
         history.getId(),
         history.getDelinquencies12m(),
         history.getActiveLoansCount(),
         history.getTotalDebtAmount(),
         history.isTaxArrears(),
-        history.getCompany() != null ? history.getCompany().getId() : null
+        history.getCompany() != null ? history.getCompany().getId() : null,
+        isApproved
     );
   }
 
