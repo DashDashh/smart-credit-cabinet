@@ -9,6 +9,22 @@
 3. Проверить decision: curl http://localhost:8000/health → {"status":"ok","ml_available":true}.
 4. Переключиться на роль «Клиент».
 
+Схема БД и тестовые данные применяются автоматически при первом запуске (`01-schema.sql`, `02-test-data.sql` в `/docker-entrypoint-initdb.d/`).
+
+### Тестовые аккаунты
+
+| Логин | Пароль | Роль |
+|---|---|---|
+| `bank_emp` | `password` | `BANK_EMPLOYEE` |
+| `technosoft` | `password` | `ENTREPRENEUR` |
+| `ivanov_cafe` | `password` | `ENTREPRENEUR` |
+| `petrov_build` | `password` | `ENTREPRENEUR` |
+| `sidorov_liq` | `password` | `ENTREPRENEUR` |
+| `promtech` | `password` | `ENTREPRENEUR` |
+| `kuznetsov_info` | `password` | `ENTREPRENEUR` |
+
+> Пароль `password` соответствует BCrypt-хешу в `test-data.sql`. Если логин не проходит — сгенерируйте хеш через `PasswordEncoder` приложения и обновите `password_hash`.
+
 ## Обозначения
 
 - Клиент — личный кабинет предпринимателя.
