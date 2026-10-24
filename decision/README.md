@@ -163,19 +163,6 @@ Fallback согласован с ML: Spearman **0.852**.
 
 Метрики обновляются при `python ml/train.py` → `ml/artifacts/metrics.json`.
 
-
-## Переменные окружения
-
-| Переменная | По умолчанию | Назначение |
-|---|---|---|
-| `MODEL_PATH` | `ml/artifacts/model.pkl` | Путь к модели |
-| `FEATURES_PATH` | `ml/artifacts/features.pkl` | Путь к спискам признаков |
-| `METRICS_PATH` | `ml/artifacts/metrics.json` | Путь к метрикам |
-| `APPROVE_THRESHOLD` | `65.0` | Порог `approved` |
-| `CONDITIONS_THRESHOLD` | `45.0` | Порог `approved_with_conditions` |
-
-Если `model.pkl` не найден — сервис **не падает**, а использует `fallback.py` (scorecard). `GET /health` покажет `ml_available: false`.
-
 ## Ограничения
 
 - **Синтетика** — не реальные данные БКИ/ФНС.
