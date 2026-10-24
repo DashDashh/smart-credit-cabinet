@@ -175,7 +175,8 @@ public class ApplicationService {
 
     return new ApplicationResponseWithDecision(
         applicationMapper.toResponse(application),
-        decisionMapper.decisionToClientResponse(application.getDecision())
+        application.getDecision() == null ?
+            null : decisionMapper.decisionToClientResponse(application.getDecision())
     );
   }
 }
