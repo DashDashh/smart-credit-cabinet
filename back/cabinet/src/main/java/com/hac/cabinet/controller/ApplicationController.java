@@ -50,6 +50,14 @@ public class ApplicationController {
     return ResponseEntity.ok(applicationService.getAll(account.getId()));
   }
 
+  @GetMapping("/{clientId}")
+  public ResponseEntity<List<ApplicationResponse>> getAllByCompany(
+      @AuthenticationPrincipal Account account,
+      @PathVariable UUID clientId
+  ) {
+    return ResponseEntity.ok(applicationService.getAllByCompanyId(account.getId(), clientId));
+  }
+
   @PutMapping("/{productId}/{clientId}")
   public ResponseEntity<ApplicationResponse> update(
       @AuthenticationPrincipal Account account,

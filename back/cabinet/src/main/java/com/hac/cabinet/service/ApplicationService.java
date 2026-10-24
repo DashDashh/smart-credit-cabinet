@@ -83,6 +83,17 @@ public class ApplicationService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
+  public List<ApplicationResponse> getAllByCompanyId(UUID accountId, UUID clientId) {
+    Account account = accountService.getById(accountId);
+    if (account.getRole().isEntrepreneur()) {
+      companyUtils.findOwned(clientId, account.getId());
+    }
+    return applicationRepository.findAllByClientId(clientId).stream()
+        .map(applicationMapper::toResponse)
+        .toList();
+  }
+
   @Transactional
   public ApplicationResponse update(
       UUID accountId,
