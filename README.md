@@ -106,28 +106,8 @@ smart-credit-cabinet/
 - [Архитектура](docs/ARCHITECTURE.md) — как сервисы связаны
 - [Логика принятия решения](docs/DECISION_LOGIC.md) — 5 этапов, матрица решений
 - [Демо-сценарии](docs/DEMO_SCENARIO.md) — 9 сценариев с шагами
-- [API](docs/API.md) — эндпоинты и примеры
 - [Research](docs/RESEARCH.md) — обоснование модели
 - [Decision Engine](decision/README.md) — детали сервиса
-
-## Переменные окружения
-
-Скопируйте `.env.example` в `.env` и заполните:
-
-```bash
-cp .env.example .env
-```
-
-| Переменная | По умолчанию | Назначение |
-|---|---|---|
-| `DECISION_URL` | `http://decision:8000` | URL decision engine для backend |
-| `DB_HOST` | `db` | Хост PostgreSQL |
-| `DB_PORT` | `5432` | Порт PostgreSQL |
-| `DB_NAME` | `smart_credit` | Имя БД |
-| `DB_USER` | `postgres` | Пользователь БД |
-| `DB_PASSWORD` | `postgres` | Пароль БД |
-| `APPROVE_THRESHOLD` | `65.0` | Порог `approved` в decision |
-| `CONDITIONS_THRESHOLD` | `45.0` | Порог `approved_with_conditions` |
 
 ## Ограничения (MVP)
 
