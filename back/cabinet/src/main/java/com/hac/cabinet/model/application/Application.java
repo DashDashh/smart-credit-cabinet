@@ -1,6 +1,7 @@
 package com.hac.cabinet.model.application;
 
 import com.hac.cabinet.model.company.Company;
+import com.hac.cabinet.model.decision.Decision;
 import com.hac.cabinet.model.product.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -55,4 +56,7 @@ public class Application {
   @JoinColumn(name = "client_id", nullable = false,
       foreignKey = @ForeignKey(name = "fk_application_client"))
   private Company client;
+
+  @OneToOne(mappedBy = "application", fetch = FetchType.LAZY)
+  private Decision decision;
 }

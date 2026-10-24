@@ -23,4 +23,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Applic
   })
   @Query("SELECT a FROM Application a WHERE a.id = :id")
   Optional<Application> findFullById(@Param("id") ApplicationId id);
+
+  @Query("""
+            SELECT a FROM Application a
+            LEFT JOIN FETCH a.decision d
+            LEFT JOIN FETCH d.conditions
+            WHERE a.id = :id
+            """)
+  Optional<Application> findWithDecisionById(@Param("id") ApplicationId id);
 }

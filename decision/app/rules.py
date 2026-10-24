@@ -302,6 +302,7 @@ def decide(req: DecisionRequest) -> DecisionResponse:
     hard_block = any(f.impact <= -100 for f in policy)
     if hard_block:
         return DecisionResponse(
+            application_id=req.application_id,
             score=0.0,
             risk_level=RiskLevel.high,
             decision=DecisionType.rejected,
@@ -317,6 +318,7 @@ def decide(req: DecisionRequest) -> DecisionResponse:
     incomplete = any(f.impact <= -100 for f in completeness)
     if incomplete:
         return DecisionResponse(
+            application_id=req.application_id,
             score=0.0,                     # score не определён
             risk_level=RiskLevel.medium,   # нейтрально
             decision=DecisionType.needs_info,

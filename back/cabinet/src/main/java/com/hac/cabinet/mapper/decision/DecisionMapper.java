@@ -1,5 +1,7 @@
 package com.hac.cabinet.mapper.decision;
 
+import com.hac.cabinet.dto.application.DecisionClientResponse;
+import com.hac.cabinet.dto.application.DecisionConditionsClientResponse;
 import com.hac.cabinet.dto.ml.DecisionResponse;
 import com.hac.cabinet.dto.ml.MlServiceApplicationId;
 import com.hac.cabinet.model.application.ApplicationId;
@@ -51,5 +53,30 @@ public class DecisionMapper {
     target.setReason(source.reason());
 
     return target;
+  }
+
+  public DecisionClientResponse decisionToClientResponse(Decision decision) {
+    return new DecisionClientResponse(
+        decision.getScore(),
+        decision.getRiskLevel(),
+        decision.getDecision(),
+        decision.getRate(),
+        decision.getNextStep(),
+        decision.getModelVersion(),
+        decision.isFallbackUsed(),
+        decisionConditionsToClientResponse(decision.getConditions())
+    );
+  }
+
+  public DecisionConditionsClientResponse decisionConditionsToClientResponse(DecisionConditions decision) {
+    if (decision == null) {
+      return null;
+    }
+    return new DecisionConditionsClientResponse(
+        decision.getApprovedAmount(),
+        decision.getTermMonths(),
+        decision.getRate(),
+        decision.getReason()
+    );
   }
 }

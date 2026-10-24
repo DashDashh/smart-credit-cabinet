@@ -1,9 +1,6 @@
 package com.hac.cabinet.controller;
 
-import com.hac.cabinet.dto.application.ApplicationResponse;
-import com.hac.cabinet.dto.application.ChangeApplicationStatusRequest;
-import com.hac.cabinet.dto.application.CreateApplicationRequest;
-import com.hac.cabinet.dto.application.UpdateApplicationRequest;
+import com.hac.cabinet.dto.application.*;
 import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.service.ApplicationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -74,5 +71,14 @@ public class ApplicationController {
       @PathVariable UUID clientId,
       @Valid @RequestBody ChangeApplicationStatusRequest request) {
     return ResponseEntity.ok(applicationService.changeStatus(account.getId(), productId, clientId, request));
+  }
+
+  @GetMapping("/{productId}/{clientId}/withDecision")
+  @PreAuthorize("hasRole('BANK_EMPLOYEE')")
+  public ResponseEntity<ApplicationResponseWithDecision> getWithDecision(
+      @PathVariable UUID productId,
+      @PathVariable UUID clientId
+  ) {
+    return ResponseEntity.ok(applicationService.getWithDecision(productId, clientId));
   }
 }

@@ -1,10 +1,8 @@
 package com.hac.cabinet.service;
 
-import com.hac.cabinet.dto.application.ApplicationResponse;
-import com.hac.cabinet.dto.application.ChangeApplicationStatusRequest;
-import com.hac.cabinet.dto.application.CreateApplicationRequest;
-import com.hac.cabinet.dto.application.UpdateApplicationRequest;
+import com.hac.cabinet.dto.application.*;
 import com.hac.cabinet.mapper.application.ApplicationMapper;
+import com.hac.cabinet.mapper.decision.DecisionMapper;
 import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.model.application.Application;
 import com.hac.cabinet.model.application.ApplicationId;
@@ -15,6 +13,7 @@ import com.hac.cabinet.repository.CompanyRepository;
 import com.hac.cabinet.repository.ProductRepository;
 import com.hac.cabinet.utils.CompanyUtils;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +29,7 @@ public class ApplicationService {
 
   private final ApplicationRepository applicationRepository;
   private final ProductRepository productRepository;
-  private final CompanyRepository companyRepository;
+  private final DecisionMapper decisionMapper;
   private final ApplicationMapper applicationMapper;
   private final AccountService accountService;
   private final CompanyUtils companyUtils;
@@ -166,5 +165,17 @@ public class ApplicationService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Application not found for product " + productId + " and client " + clientId));
+  }
+
+  public @Nullable ApplicationResponseWithDecision getWithDecision(UUID productId, UUID clientId) {
+    Application application = applicationRepository.findWithDecisionById(new ApplicationId(productId, clientId))
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Application not found for product " + productId + " and client " + clientId));
+
+    return new ApplicationResponseWithDecision(
+        applicationMapper.toResponse(application),
+        decisionMapper.decisionToClientResponse(application.getDecision())
+    );
   }
 }

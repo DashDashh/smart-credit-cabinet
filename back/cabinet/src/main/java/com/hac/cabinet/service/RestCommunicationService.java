@@ -55,6 +55,7 @@ public class RestCommunicationService {
                 .connectTimeout(Duration.ofSeconds(3))
                 .build()
         ))
+        .requestInterceptor(new FullLoggingInterceptor())
         .build();
 
     RetryPolicy retryPolicy = RetryPolicy.builder()
@@ -126,6 +127,7 @@ public class RestCommunicationService {
           .toDecisionConditions(decisionResponse.conditions().get());
 
       decision.setConditions(decisionConditions);
+      decisionConditions.setDecision(decision);
     }
 
     decisionRepository.save(decision);
