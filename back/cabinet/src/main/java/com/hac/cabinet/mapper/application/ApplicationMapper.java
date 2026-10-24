@@ -4,6 +4,7 @@ import com.hac.cabinet.dto.application.ApplicationResponse;
 import com.hac.cabinet.dto.application.CreateApplicationRequest;
 import com.hac.cabinet.dto.application.UpdateApplicationRequest;
 import com.hac.cabinet.dto.ml.MlServiceApplication;
+import com.hac.cabinet.dto.ml.MlServiceApplicationId;
 import com.hac.cabinet.model.application.Application;
 import com.hac.cabinet.model.application.ApplicationId;
 import com.hac.cabinet.model.application.ApplicationStatus;
@@ -47,9 +48,16 @@ public class ApplicationMapper {
     String appType = application.getProduct().getPurpose().getStringExpression();
     return new MlServiceApplication(
         appType,
-        application.getAmount(),
+        application.getAmount().doubleValue(),
         application.getTermMonth(),
         appType + " " + application.getPurpose()
+    );
+  }
+
+  public MlServiceApplicationId idToMlServiceApplicationId(ApplicationId applicationId) {
+    return new MlServiceApplicationId(
+        applicationId.getProductId(),
+        applicationId.getClientId()
     );
   }
 }

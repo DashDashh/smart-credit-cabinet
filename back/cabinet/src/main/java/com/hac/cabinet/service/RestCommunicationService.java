@@ -3,7 +3,16 @@ package com.hac.cabinet.service;
 import com.hac.cabinet.dto.ml.DecisionRequest;
 import com.hac.cabinet.dto.ml.DecisionResponse;
 import com.hac.cabinet.dto.ml.MlHealthResponse;
+import com.hac.cabinet.mapper.application.ApplicationMapper;
+import com.hac.cabinet.mapper.decision.DecisionMapper;
+import com.hac.cabinet.model.application.Application;
+import com.hac.cabinet.model.application.ApplicationId;
+import com.hac.cabinet.model.decision.Decision;
+import com.hac.cabinet.model.decision.DecisionConditions;
+import com.hac.cabinet.repository.ApplicationRepository;
+import com.hac.cabinet.repository.DecisionRepository;
 import com.hac.cabinet.security.FullLoggingInterceptor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.HttpClientSettings;
@@ -12,6 +21,7 @@ import org.springframework.core.retry.RetryTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,8 +35,14 @@ public class RestCommunicationService {
 
   private final RestClient restClient;
   private final RetryTemplate retryTemplate;
+  private final ApplicationRepository applicationRepository;
+  private final DecisionMapper decisionMapper;
+  private final DecisionRepository decisionRepository;
 
-  public RestCommunicationService(RestClient.Builder builder) {
+  public RestCommunicationService(RestClient.Builder builder, ApplicationRepository applicationRepository, DecisionMapper decisionMapper, DecisionRepository decisionRepository) {
+    this.applicationRepository = applicationRepository;
+    this.decisionMapper = decisionMapper;
+    this.decisionRepository = decisionRepository;
     HttpClientSettings settings = HttpClientSettings.defaults()
         .withConnectTimeout(Duration.ofSeconds(3))
         .withReadTimeout(Duration.ofSeconds(10));
@@ -76,6 +92,8 @@ public class RestCommunicationService {
     log.info("ML decision received: score={}, decision={}, next_step={}",
         response.score(), response.decision(), response.next_step());
     log.info("ML decision received (FULL): {}", response);
+
+    writeResponse(response);
   }
 
   private void checkHealth() {
@@ -84,7 +102,7 @@ public class RestCommunicationService {
         .retrieve()
         .body(MlHealthResponse.class);
 
-    if (health == null || !"ok".equalsIgnoreCase(health.status())/* || !health.mlAvailable()*/) {
+    if (health == null || !"ok".equalsIgnoreCase(health.status())) {
       throw new ResponseStatusException(
           HttpStatus.SERVICE_UNAVAILABLE,
           "ML service is not healthy: status=" + (health != null ? health.status() : "null")
@@ -92,6 +110,25 @@ public class RestCommunicationService {
               + ", loadError=" + (health != null ? health.loadError() : "null")
       );
     }
+  }
+
+  @Transactional
+  private void writeResponse(DecisionResponse decisionResponse) {
+    Decision decision = decisionMapper.toDecision(decisionResponse);
+
+    ApplicationId applicationId = decisionMapper.toApplicationId(decisionResponse.application_id());
+    Application application = applicationRepository.findById(applicationId).orElseThrow();
+    decision.setApplication(application);
+
+    decision.setConditions(null);
+    if (decisionResponse.conditions().isPresent()) {
+      DecisionConditions decisionConditions = decisionMapper
+          .toDecisionConditions(decisionResponse.conditions().get());
+
+      decision.setConditions(decisionConditions);
+    }
+
+    decisionRepository.save(decision);
   }
 }
 

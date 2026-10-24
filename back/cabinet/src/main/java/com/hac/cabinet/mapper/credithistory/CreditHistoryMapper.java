@@ -33,7 +33,7 @@ public class CreditHistoryMapper {
     return new MlServiceCreditHistory(
         creditHistory.getDelinquencies12m(),
         creditHistory.getActiveLoansCount(),
-        creditHistory.getTotalDebtAmount(),
+        creditHistory.getTotalDebtAmount().doubleValue(),
         creditHistory.isTaxArrears()
     );
   }

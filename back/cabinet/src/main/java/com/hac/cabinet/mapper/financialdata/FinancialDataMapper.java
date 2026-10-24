@@ -33,11 +33,11 @@ public class FinancialDataMapper {
 
   public MlServiceFinancialData toMlServiceFinancialData(FinancialData financialData) {
     return new MlServiceFinancialData(
-        financialData.getRevenueMonthly(),
-        financialData.getRevenueAnnual(),
-        financialData.getCurrentDebtPayments(),
-        financialData.getNetProfitMonthly(),
-        financialData.getAccountsPayable()
+        financialData.getRevenueMonthly().doubleValue(),
+        financialData.getRevenueAnnual().doubleValue(),
+        financialData.getCurrentDebtPayments().doubleValue(),
+        financialData.getNetProfitMonthly().doubleValue(),
+        financialData.getAccountsPayable().doubleValue()
     );
   }
 }

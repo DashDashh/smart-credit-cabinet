@@ -93,3 +93,40 @@ CREATE TABLE IF NOT EXISTS application (
     CONSTRAINT chk_application_term_month CHECK (term_month >= 1),
     CONSTRAINT chk_application_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'ACTIVE', 'CLOSED'))
 );
+
+CREATE TABLE IF NOT EXISTS decision (
+    id UUID NOT NULL,
+    application_product_id UUID NOT NULL,
+    application_client_id UUID NOT NULL,
+    score NUMERIC(5, 1) NOT NULL,
+    risk_level VARCHAR(16) NOT NULL,
+    decision VARCHAR(32) NOT NULL,
+    rate NUMERIC(9, 4),
+    next_step VARCHAR(64) NOT NULL,
+    model_version VARCHAR(64) NOT NULL,
+    fallback_used BOOLEAN NOT NULL,
+    CONSTRAINT pk_decision PRIMARY KEY (id),
+    CONSTRAINT fk_decision_application FOREIGN KEY (application_product_id, application_client_id)
+        REFERENCES application (product_id, client_id) ON DELETE CASCADE,
+    CONSTRAINT chk_decision_score CHECK (score >= 0 AND score <= 100),
+    CONSTRAINT chk_decision_risk_level CHECK (risk_level IN ('LOW', 'MEDIUM', 'HIGH')),
+    CONSTRAINT chk_decision_decision CHECK (decision IN (
+        'APPROVED', 'APPROVED_WITH_CONDITIONS', 'NEEDS_INFO', 'REJECTED', 'MANUAL_REVIEW'
+    ))
+);
+
+CREATE TABLE IF NOT EXISTS decision_conditions (
+    id UUID NOT NULL,
+    approved_amount NUMERIC(19, 2) NOT NULL,
+    term_months INT NOT NULL,
+    rate NUMERIC(9, 4) NOT NULL,
+    reason VARCHAR(1000) NOT NULL,
+    decision_id UUID NOT NULL,
+    CONSTRAINT pk_decision_conditions PRIMARY KEY (id),
+    CONSTRAINT uq_decision_conditions_decision UNIQUE (decision_id),
+    CONSTRAINT fk_decision_conditions_decision FOREIGN KEY (decision_id)
+        REFERENCES decision (id) ON DELETE CASCADE,
+    CONSTRAINT chk_decision_conditions_approved_amount CHECK (approved_amount >= 0),
+    CONSTRAINT chk_decision_conditions_term_months CHECK (term_months >= 1),
+    CONSTRAINT chk_decision_conditions_rate CHECK (rate >= 0)
+);

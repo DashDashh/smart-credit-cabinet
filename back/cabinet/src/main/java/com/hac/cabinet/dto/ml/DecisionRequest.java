@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record DecisionRequest(
-    String application_id,
+    MlServiceApplicationId application_id,
     MlServiceCompany company,
     MlServiceFinancialData financials,
     MlServiceCreditHistory credit_history,
