@@ -21,6 +21,7 @@ docker compose up --build
 |---|---|
 | Frontend | http://localhost:3000 |
 | Backend API | http://localhost:8080 |
+| Swagger (Backend API) | http://localhost:8080/swagger-ui/index.html# |
 | Decision Engine | http://localhost:8000 |
 | Swagger (decision) | http://localhost:8000/docs |
 
@@ -85,7 +86,7 @@ smart-credit-cabinet/
 - [Демо-сценарии](docs/DEMO_SCENARIO.md) — 9 сценариев с шагами
 - [Research](docs/RESEARCH.md) — обоснование модели
 - [Decision Engine](decision/README.md) — детали сервиса
-- [Backend и БД](docs/BACK.md)
+- [Backend и БД](docs/BACK.md) - детали сервиса и схема БД
 
 ## Ограничения (MVP)
 
