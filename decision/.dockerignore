@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Данные и мусор ML
+ml/data/
+*.csv
+to_check.py
+
+# Git / IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# OS
+.DS_Store
