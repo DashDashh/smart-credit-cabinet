@@ -23,6 +23,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      ml:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cabinet
       SPRING_DATASOURCE_USERNAME: cabinet
@@ -30,6 +32,13 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
     ports:
       - "8080:8080"
+    
+  ml:
+    build: ./decision
+    container_name: cabinet-ml
+    ports:
+      - "8000:8000"
+
 
 volumes:
   pgdata:
