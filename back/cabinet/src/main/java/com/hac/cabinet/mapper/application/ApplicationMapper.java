@@ -3,6 +3,7 @@ package com.hac.cabinet.mapper.application;
 import com.hac.cabinet.dto.application.ApplicationResponse;
 import com.hac.cabinet.dto.application.CreateApplicationRequest;
 import com.hac.cabinet.dto.application.UpdateApplicationRequest;
+import com.hac.cabinet.dto.ml.MlServiceApplication;
 import com.hac.cabinet.model.application.Application;
 import com.hac.cabinet.model.application.ApplicationId;
 import com.hac.cabinet.model.application.ApplicationStatus;
@@ -39,6 +40,16 @@ public class ApplicationMapper {
         app.getTermMonth(),
         app.getPurpose(),
         app.getStatus()
+    );
+  }
+
+  public MlServiceApplication toMlServiceApplication(Application application) {
+    String appType = application.getProduct().getPurpose().getStringExpression();
+    return new MlServiceApplication(
+        appType,
+        application.getAmount(),
+        application.getTermMonth(),
+        appType + " " + application.getPurpose()
     );
   }
 }

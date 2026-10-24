@@ -34,6 +34,14 @@ public class ApplicationService {
   private final ApplicationMapper applicationMapper;
   private final AccountService accountService;
   private final CompanyUtils companyUtils;
+  private final MlServiceDataCollector mlServiceDataCollector;
+
+  @Transactional
+  public ApplicationResponse createAndSendRequest(UUID accountId, CreateApplicationRequest request) {
+    ApplicationResponse response = create(accountId, request);
+    mlServiceDataCollector.collectAndSend(new ApplicationId(response.productId(), response.clientId()));
+    return response;
+  }
 
   @Transactional
   public ApplicationResponse create(UUID accountId, CreateApplicationRequest request) {

@@ -2,6 +2,7 @@ package com.hac.cabinet.mapper.financialdata;
 
 import com.hac.cabinet.dto.financialdata.FinancialDataResponse;
 import com.hac.cabinet.dto.financialdata.UpsertFinancialDataRequest;
+import com.hac.cabinet.dto.ml.MlServiceFinancialData;
 import com.hac.cabinet.model.company.FinancialData;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,16 @@ public class FinancialDataMapper {
         data.getNetProfitMonthly(),
         data.getAccountsPayable(),
         data.getCompany() != null ? data.getCompany().getId() : null
+    );
+  }
+
+  public MlServiceFinancialData toMlServiceFinancialData(FinancialData financialData) {
+    return new MlServiceFinancialData(
+        financialData.getRevenueMonthly(),
+        financialData.getRevenueAnnual(),
+        financialData.getCurrentDebtPayments(),
+        financialData.getNetProfitMonthly(),
+        financialData.getAccountsPayable()
     );
   }
 }

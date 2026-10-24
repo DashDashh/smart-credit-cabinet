@@ -32,7 +32,7 @@ public class ApplicationController {
       @Valid @RequestBody CreateApplicationRequest request
   ) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(applicationService.create(account.getId(), request));
+        .body(applicationService.createAndSendRequest(account.getId(), request));
   }
 
   @GetMapping("/{productId}/{clientId}")
