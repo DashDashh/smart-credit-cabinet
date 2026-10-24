@@ -40,5 +40,14 @@ services:
       - "8000:8000"
 
 
+  client:
+    build: ./client
+    container_name: cabinet-client
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "80:80"
+
 volumes:
   pgdata:
