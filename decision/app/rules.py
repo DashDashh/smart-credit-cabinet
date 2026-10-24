@@ -352,6 +352,7 @@ def decide(req: DecisionRequest) -> DecisionResponse:
     model_version = "fallback-v1" if fallback_used else get_model_version()
 
     return DecisionResponse(
+        application_id=req.application_id,
         score=round(score, 1),
         risk_level=risk_level(score),
         decision=decision,

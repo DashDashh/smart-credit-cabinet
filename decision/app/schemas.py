@@ -73,10 +73,13 @@ class Application(BaseModel):
         description="Цель: equipment, expansion, renovation, working_capital, trade, salary, marketing, repair"
     )
 
+class ApplicationId(BaseModel):
+    product_id: str = Field(min_length=1)
+    client_id: str = Field(min_length=1)
 
 # ВХОД: ЗАПРОС ЦЕЛИКОМ
 class DecisionRequest(BaseModel):
-    application_id: str
+    application_id: ApplicationId
     company: Company
     financials: Financials
     credit_history: CreditHistory
@@ -103,6 +106,7 @@ class Conditions(BaseModel):
 
 # ВЫХОД: РЕШЕНИЕ
 class DecisionResponse(BaseModel):
+    application_id: ApplicationId
     score: float = Field(ge=0, le=100, description="Скор: 100 — без риска, 0 — максимальный риск")
     risk_level: RiskLevel
     decision: DecisionType
