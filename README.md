@@ -85,6 +85,7 @@ smart-credit-cabinet/
 - [Демо-сценарии](docs/DEMO_SCENARIO.md) — 9 сценариев с шагами
 - [Research](docs/RESEARCH.md) — обоснование модели
 - [Decision Engine](decision/README.md) — детали сервиса
+- [Backend и БД](docs/BACK.md)
 
 ## Ограничения (MVP)
 
