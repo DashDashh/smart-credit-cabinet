@@ -74,8 +74,8 @@ class Application(BaseModel):
     )
 
 class ApplicationId(BaseModel):
-    productId: str = Field(min_length=1)
-    clientId: str = Field(min_length=1)
+    product_id: str = Field(min_length=1)
+    client_id: str = Field(min_length=1)
 
 # ВХОД: ЗАПРОС ЦЕЛИКОМ
 class DecisionRequest(BaseModel):
