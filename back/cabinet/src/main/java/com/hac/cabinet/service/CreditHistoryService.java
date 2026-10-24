@@ -10,7 +10,6 @@ import com.hac.cabinet.repository.CreditHistoryRepository;
 import com.hac.cabinet.utils.CompanyUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;

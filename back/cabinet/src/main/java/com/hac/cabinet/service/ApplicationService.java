@@ -9,7 +9,6 @@ import com.hac.cabinet.model.application.ApplicationId;
 import com.hac.cabinet.model.company.Company;
 import com.hac.cabinet.model.product.Product;
 import com.hac.cabinet.repository.ApplicationRepository;
-import com.hac.cabinet.repository.CompanyRepository;
 import com.hac.cabinet.repository.ProductRepository;
 import com.hac.cabinet.utils.CompanyUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;

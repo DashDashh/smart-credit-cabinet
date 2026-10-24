@@ -11,7 +11,6 @@ import com.hac.cabinet.repository.FinancialDataRepository;
 import com.hac.cabinet.utils.CompanyUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,7 +22,6 @@ import java.util.UUID;
 public class FinancialDataService {
 
   private final FinancialDataRepository financialDataRepository;
-  private final CompanyRepository companyRepository;
   private final AccountService accountService;
   private final FinancialDataMapper financialDataMapper;
   private final CompanyUtils companyUtils;

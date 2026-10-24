@@ -1,6 +1,5 @@
 package com.hac.cabinet.dto.ml;
 
-import java.math.BigDecimal;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 

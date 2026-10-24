@@ -1,6 +1,5 @@
 package com.hac.cabinet.dto.company;
 
-import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.model.company.BusinessStatus;
 import com.hac.cabinet.model.company.CompanyType;
 
