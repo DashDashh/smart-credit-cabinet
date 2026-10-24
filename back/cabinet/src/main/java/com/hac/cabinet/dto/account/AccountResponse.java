@@ -1,6 +1,6 @@
 package com.hac.cabinet.dto.account;
 
-import com.hac.cabinet.model.Role;
+import com.hac.cabinet.model.account.Role;
 
 import java.time.Instant;
 import java.util.UUID;

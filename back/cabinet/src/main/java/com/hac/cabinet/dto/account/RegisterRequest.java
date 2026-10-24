@@ -1,6 +1,6 @@
 package com.hac.cabinet.dto.account;
 
-import com.hac.cabinet.model.Role;
+import com.hac.cabinet.model.account.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
