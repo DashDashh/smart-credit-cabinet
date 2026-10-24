@@ -10,7 +10,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./back/cabinet/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./back/cabinet/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./back/cabinet/src/main/resources/test-data.sql:/docker-entrypoint-initdb.d/02-test-data.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cabinet -d cabinet"]
       interval: 5s
