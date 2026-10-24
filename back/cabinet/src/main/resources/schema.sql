@@ -62,3 +62,34 @@ CREATE TABLE IF NOT EXISTS credit_history (
     CONSTRAINT chk_credit_history_active_loans CHECK (active_loans_count >= 0),
     CONSTRAINT chk_credit_history_total_debt CHECK (total_debt_amount >= 0)
 );
+
+CREATE TABLE IF NOT EXISTS product (
+    id UUID NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    amount NUMERIC(19, 2) NOT NULL,
+    term_months INT NOT NULL,
+    rate NUMERIC(9, 4) NOT NULL,
+    purpose VARCHAR(32) NOT NULL,
+    CONSTRAINT pk_product PRIMARY KEY (id),
+    CONSTRAINT chk_product_amount CHECK (amount >= 0),
+    CONSTRAINT chk_product_term_months CHECK (term_months >= 1),
+    CONSTRAINT chk_product_rate CHECK (rate >= 0),
+    CONSTRAINT chk_product_purpose CHECK (purpose IN ('INVEST', 'REVOLVING', 'MICRO'))
+);
+
+CREATE TABLE IF NOT EXISTS application (
+    product_id UUID NOT NULL,
+    client_id UUID NOT NULL,
+    amount NUMERIC(19, 2) NOT NULL,
+    term_month INT NOT NULL,
+    purpose VARCHAR(255) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    CONSTRAINT pk_application PRIMARY KEY (product_id, client_id),
+    CONSTRAINT fk_application_product FOREIGN KEY (product_id)
+        REFERENCES product (id) ON DELETE CASCADE,
+    CONSTRAINT fk_application_client FOREIGN KEY (client_id)
+        REFERENCES company (id) ON DELETE CASCADE,
+    CONSTRAINT chk_application_amount CHECK (amount >= 0),
+    CONSTRAINT chk_application_term_month CHECK (term_month >= 1),
+    CONSTRAINT chk_application_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'ACTIVE', 'CLOSED'))
+);
