@@ -11,6 +11,7 @@ import {
     api,
     clearSession,
     getStoredSession,
+    getUserErrorMessage,
     normalizeRole,
     saveSession,
 } from './shared/api';
@@ -55,9 +56,10 @@ function App() {
             setAccount(next.account);
         } catch (error) {
             setMessage(
-                error instanceof Error
-                    ? error.message
-                    : 'Не удалось выполнить запрос',
+                getUserErrorMessage(
+                    error,
+                    'Не удалось выполнить запрос. Проверьте данные и попробуйте ещё раз.',
+                ),
             );
         } finally {
             setLoading(false);
@@ -114,13 +116,21 @@ function App() {
                     path='/profile'
                     element={
                         normalizeRole(account.role) === 'BANK_EMPLOYEE' ? (
-                            <ApplicationsPage />
+                            <ApplicationsPage session={session} />
                         ) : (
-                            <DashboardPage account={account} />
+                            <DashboardPage
+                                account={account}
+                                session={session}
+                            />
                         )
                     }
                 />
-                <Route path='/catalog' element={<CatalogPage />} />
+                <Route
+                    path='/catalog'
+                    element={
+                        <CatalogPage account={account} session={session} />
+                    }
+                />
                 <Route path='*' element={<Navigate to='/profile' replace />} />
             </Route>
         </Routes>

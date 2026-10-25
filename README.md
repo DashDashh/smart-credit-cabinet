@@ -72,7 +72,7 @@ smart-credit-cabinet/
 │   ├── src/
 │   ├── Dockerfile
 │   └── pom.xml
-└── frontend/                    # Frontend (React)
+└── client/                      # Frontend (React)
     ├── README.md
     ├── src/
     ├── Dockerfile
@@ -87,6 +87,7 @@ smart-credit-cabinet/
 - [Research](docs/RESEARCH.md) — обоснование модели
 - [Decision Engine](decision/README.md) — детали сервиса
 - [Backend и БД](docs/BACK.md) - детали сервиса и схема БД
+- [Frontend](docs/FRONTEND.md) - архитектура, маршруты и интеграция с API
 
 ## Ограничения (MVP)
 
