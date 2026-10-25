@@ -1,24 +1,21 @@
 package com.hac.cabinet.service;
 
-import com.hac.cabinet.dto.application.ApplicationResponse;
-import com.hac.cabinet.dto.application.ChangeApplicationStatusRequest;
-import com.hac.cabinet.dto.application.CreateApplicationRequest;
-import com.hac.cabinet.dto.application.UpdateApplicationRequest;
+import com.hac.cabinet.dto.application.*;
 import com.hac.cabinet.mapper.application.ApplicationMapper;
+import com.hac.cabinet.mapper.decision.DecisionMapper;
 import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.model.application.Application;
 import com.hac.cabinet.model.application.ApplicationId;
 import com.hac.cabinet.model.company.Company;
 import com.hac.cabinet.model.product.Product;
 import com.hac.cabinet.repository.ApplicationRepository;
-import com.hac.cabinet.repository.CompanyRepository;
 import com.hac.cabinet.repository.ProductRepository;
 import com.hac.cabinet.utils.CompanyUtils;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -30,10 +27,18 @@ public class ApplicationService {
 
   private final ApplicationRepository applicationRepository;
   private final ProductRepository productRepository;
-  private final CompanyRepository companyRepository;
+  private final DecisionMapper decisionMapper;
   private final ApplicationMapper applicationMapper;
   private final AccountService accountService;
   private final CompanyUtils companyUtils;
+  private final MlServiceDataCollector mlServiceDataCollector;
+
+  @Transactional
+  public ApplicationResponse createAndSendRequest(UUID accountId, CreateApplicationRequest request) {
+    ApplicationResponse response = create(accountId, request);
+    mlServiceDataCollector.collectAndSend(new ApplicationId(response.productId(), response.clientId()));
+    return response;
+  }
 
   @Transactional
   public ApplicationResponse create(UUID accountId, CreateApplicationRequest request) {
@@ -79,6 +84,17 @@ public class ApplicationService {
       );
     }
     return applicationRepository.findAll().stream()
+        .map(applicationMapper::toResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<ApplicationResponse> getAllByCompanyId(UUID accountId, UUID clientId) {
+    Account account = accountService.getById(accountId);
+    if (account.getRole().isEntrepreneur()) {
+      companyUtils.findOwned(clientId, account.getId());
+    }
+    return applicationRepository.findAllByClientId(clientId).stream()
         .map(applicationMapper::toResponse)
         .toList();
   }
@@ -147,5 +163,18 @@ public class ApplicationService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Application not found for product " + productId + " and client " + clientId));
+  }
+
+  public @Nullable ApplicationResponseWithDecision getWithDecision(UUID productId, UUID clientId) {
+    Application application = applicationRepository.findWithDecisionById(new ApplicationId(productId, clientId))
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Application not found for product " + productId + " and client " + clientId));
+
+    return new ApplicationResponseWithDecision(
+        applicationMapper.toResponse(application),
+        application.getDecision() == null ?
+            null : decisionMapper.decisionToClientResponse(application.getDecision())
+    );
   }
 }

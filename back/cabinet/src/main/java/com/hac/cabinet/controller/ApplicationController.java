@@ -1,9 +1,6 @@
 package com.hac.cabinet.controller;
 
-import com.hac.cabinet.dto.application.ApplicationResponse;
-import com.hac.cabinet.dto.application.ChangeApplicationStatusRequest;
-import com.hac.cabinet.dto.application.CreateApplicationRequest;
-import com.hac.cabinet.dto.application.UpdateApplicationRequest;
+import com.hac.cabinet.dto.application.*;
 import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.service.ApplicationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +29,7 @@ public class ApplicationController {
       @Valid @RequestBody CreateApplicationRequest request
   ) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(applicationService.create(account.getId(), request));
+        .body(applicationService.createAndSendRequest(account.getId(), request));
   }
 
   @GetMapping("/{productId}/{clientId}")
@@ -48,6 +45,14 @@ public class ApplicationController {
   public ResponseEntity<List<ApplicationResponse>> getAll(
       @AuthenticationPrincipal Account account) {
     return ResponseEntity.ok(applicationService.getAll(account.getId()));
+  }
+
+  @GetMapping("/{clientId}")
+  public ResponseEntity<List<ApplicationResponse>> getAllByCompany(
+      @AuthenticationPrincipal Account account,
+      @PathVariable UUID clientId
+  ) {
+    return ResponseEntity.ok(applicationService.getAllByCompanyId(account.getId(), clientId));
   }
 
   @PutMapping("/{productId}/{clientId}")
@@ -66,5 +71,14 @@ public class ApplicationController {
       @PathVariable UUID clientId,
       @Valid @RequestBody ChangeApplicationStatusRequest request) {
     return ResponseEntity.ok(applicationService.changeStatus(account.getId(), productId, clientId, request));
+  }
+
+  @GetMapping("/{productId}/{clientId}/withDecision")
+  @PreAuthorize("hasRole('BANK_EMPLOYEE')")
+  public ResponseEntity<ApplicationResponseWithDecision> getWithDecision(
+      @PathVariable UUID productId,
+      @PathVariable UUID clientId
+  ) {
+    return ResponseEntity.ok(applicationService.getWithDecision(productId, clientId));
   }
 }

@@ -10,7 +10,6 @@ import com.hac.cabinet.repository.CreditHistoryRepository;
 import com.hac.cabinet.utils.CompanyUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +24,7 @@ public class CreditHistoryService {
   private final CompanyUtils companyUtils;
   private final CreditHistoryMapper creditHistoryMapper;
   private final AccountService accountService;
+  private final ExternalCreditHistoryServiceMock externalCreditHistoryServiceMock;
 
   @Transactional
   public CreditHistoryResponse create(UUID companyId, UpsertCreditHistoryRequest request, UUID accountId) {
@@ -38,7 +38,10 @@ public class CreditHistoryService {
     CreditHistory history = creditHistoryMapper.fromRequest(request);
     history.setCompany(company);
 
-    return creditHistoryMapper.toResponse(creditHistoryRepository.save(history));
+    return creditHistoryMapper.toResponse(
+        creditHistoryRepository.save(history),
+        externalCreditHistoryServiceMock.approveCompanyCreditHistory(companyId)
+    );
   }
 
   @Transactional(readOnly = true)
@@ -57,7 +60,10 @@ public class CreditHistoryService {
           HttpStatus.NOT_FOUND, "Credit history not found for company: " + companyId);
     }
 
-    return creditHistoryMapper.toResponse(history);
+    return creditHistoryMapper.toResponse(
+        history,
+        externalCreditHistoryServiceMock.approveCompanyCreditHistory(companyId)
+    );
   }
 
   @Transactional
@@ -75,6 +81,9 @@ public class CreditHistoryService {
     history.setTotalDebtAmount(request.totalDebtAmount());
     history.setTaxArrears(request.taxArrears());
 
-    return creditHistoryMapper.toResponse(creditHistoryRepository.save(history));
+    return creditHistoryMapper.toResponse(
+        creditHistoryRepository.save(history),
+        externalCreditHistoryServiceMock.approveCompanyCreditHistory(companyId)
+    );
   }
 }

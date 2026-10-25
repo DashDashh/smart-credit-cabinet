@@ -30,7 +30,7 @@ public enum ApplicationStatus {
     return switch (this) {
       case PENDING -> Set.of(APPROVED, REJECTED, CLOSED);
       case APPROVED -> Set.of(ACTIVE);
-      case REJECTED -> Set.of(ACTIVE);
+      case REJECTED -> Set.of();
       case ACTIVE -> Set.of();
       case CLOSED -> Set.of();
     };

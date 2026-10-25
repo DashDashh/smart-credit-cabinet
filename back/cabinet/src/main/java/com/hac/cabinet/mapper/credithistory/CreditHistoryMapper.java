@@ -2,6 +2,7 @@ package com.hac.cabinet.mapper.credithistory;
 
 import com.hac.cabinet.dto.credithistory.CreditHistoryResponse;
 import com.hac.cabinet.dto.credithistory.UpsertCreditHistoryRequest;
+import com.hac.cabinet.dto.ml.MlServiceCreditHistory;
 import com.hac.cabinet.model.company.CreditHistory;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +18,24 @@ public class CreditHistoryMapper {
     return history;
   }
 
-  public CreditHistoryResponse toResponse(CreditHistory history) {
+  public CreditHistoryResponse toResponse(CreditHistory history, boolean isApproved) {
     return new CreditHistoryResponse(
         history.getId(),
         history.getDelinquencies12m(),
         history.getActiveLoansCount(),
         history.getTotalDebtAmount(),
         history.isTaxArrears(),
-        history.getCompany() != null ? history.getCompany().getId() : null
+        history.getCompany() != null ? history.getCompany().getId() : null,
+        isApproved
+    );
+  }
+
+  public MlServiceCreditHistory toMlServiceCreditHistory(CreditHistory creditHistory) {
+    return new MlServiceCreditHistory(
+        creditHistory.getDelinquencies12m(),
+        creditHistory.getActiveLoansCount(),
+        creditHistory.getTotalDebtAmount().doubleValue(),
+        creditHistory.isTaxArrears()
     );
   }
 }

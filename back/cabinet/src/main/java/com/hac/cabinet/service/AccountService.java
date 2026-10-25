@@ -7,12 +7,14 @@ import com.hac.cabinet.mapper.account.AccountMapper;
 import com.hac.cabinet.model.account.Account;
 import com.hac.cabinet.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +31,8 @@ public class AccountService implements UserDetailsService {
   @Transactional
   public Account createIfNotExist(RegisterRequest request) {
     if (accountRepository.existsByEmail(request.email())) {
-      throw new RuntimeException("Account with email %s already exists".formatted(request.email()));
+      throw new RuntimeException(new ResponseStatusException(
+          HttpStatus.CONFLICT, "Account already exist: " + request.email()));
     }
 
     Account account = accountMapper.fromRegisterRequest(request);
@@ -46,7 +49,8 @@ public class AccountService implements UserDetailsService {
   @Transactional(readOnly = true)
   public Account getById(UUID id) {
     return accountRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Account not found: " + id));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Account not found: " + id));
   }
 
   public AccountResponse getResponseByLogin(String login) {
@@ -56,13 +60,15 @@ public class AccountService implements UserDetailsService {
   @Transactional(readOnly = true)
   public Account getByLogin(String login) {
     return accountRepository.findByLogin(login)
-        .orElseThrow(() -> new RuntimeException("Account not found: " + login));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Account not found: " + login));
   }
 
   @Transactional(readOnly = true)
   public Account getByEmail(String email) {
     return accountRepository.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("Account not found: " + email));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Account not found: " + email));
   }
 
   @Transactional(readOnly = true)
@@ -102,6 +108,7 @@ public class AccountService implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     return accountRepository.findByLogin(username)
-        .orElseThrow(() -> new RuntimeException("Account not found: " + username));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Account not found: " + username));
   }
 }
